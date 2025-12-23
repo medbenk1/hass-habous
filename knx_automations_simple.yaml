@@ -1,0 +1,166 @@
+# Automations simplifiées pour KNX - Format Minutes depuis minuit
+# 
+# Cette version utilise des templates plus simples et lisibles
+# Format: Minutes depuis minuit (0-1439) - DPTValue1Ucount (16-bit unsigned)
+
+automation:
+  # Envoi de l'heure d'Alfajr
+  - alias: "KNX - Envoyer heure Alfajr"
+    id: knx_send_alfajr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_alfajr
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_alfajr') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/1"  # ⚠️ ADAPTEZ CETTE ADRESSE À VOTRE CONFIGURATION
+          payload: >
+            {% set time_str = states('sensor.salat_alfajr') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure de Chourouq
+  - alias: "KNX - Envoyer heure Chourouq"
+    id: knx_send_chourouq
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_chourouq
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_chourouq') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/2"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set time_str = states('sensor.salat_chourouq') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure de Dhuhr
+  - alias: "KNX - Envoyer heure Dhuhr"
+    id: knx_send_dhuhr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_dhuhr
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_dhuhr') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/3"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set time_str = states('sensor.salat_dhuhr') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure d'Asr
+  - alias: "KNX - Envoyer heure Asr"
+    id: knx_send_asr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_asr
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_asr') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/4"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set time_str = states('sensor.salat_asr') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure de Maghrib
+  - alias: "KNX - Envoyer heure Maghrib"
+    id: knx_send_maghrib
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_maghrib
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_maghrib') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/5"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set time_str = states('sensor.salat_maghrib') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure d'Ishae
+  - alias: "KNX - Envoyer heure Ishae"
+    id: knx_send_ishae
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_ishae
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_ishae') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/6"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set time_str = states('sensor.salat_ishae') %}
+            {% set parts = time_str.split(':') %}
+            {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+          type: "DPTValue1Ucount"
+
+  # Envoi de la prochaine prière (code numérique 1-6)
+  - alias: "KNX - Envoyer prochaine prière"
+    id: knx_send_next_prayer
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_next_prayer
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_next_prayer') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/7"  # ⚠️ ADAPTEZ CETTE ADRESSE
+          payload: >
+            {% set prayer = states('sensor.salat_next_prayer') | lower %}
+            {% if prayer == 'alfajr' %}1
+            {% elif prayer == 'chourouq' %}2
+            {% elif prayer == 'dhuhr' %}3
+            {% elif prayer == 'asr' %}4
+            {% elif prayer == 'maghrib' %}5
+            {% elif prayer == 'ishae' %}6
+            {% else %}0{% endif %}
+          type: "DPTValue1Ucount"
+
+  # Envoi initial au démarrage de Home Assistant
+  - alias: "KNX - Synchroniser toutes les heures au démarrage"
+    id: knx_sync_all_on_startup
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_alfajr') not in ['unknown', 'unavailable', ''] }}"
+    action:
+      - delay: "00:00:10"  # Attendre 10 secondes pour que les sensors soient prêts
+      - service: automation.trigger
+        data:
+          entity_id:
+            - automation.knx_send_alfajr
+            - automation.knx_send_chourouq
+            - automation.knx_send_dhuhr
+            - automation.knx_send_asr
+            - automation.knx_send_maghrib
+            - automation.knx_send_ishae
+            - automation.knx_send_next_prayer
+

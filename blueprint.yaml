@@ -1,0 +1,270 @@
+blueprint:
+  name: "Salat Time - Envoyer sur KNX"
+  description: "Envoie les horaires de prière sur le bus KNX en minutes depuis minuit"
+  domain: automation
+  input:
+    alfajr_ga:
+      name: "Adresse GA Alfajr"
+      description: "Adresse de groupe KNX pour Alfajr (ex: 1/1/1)"
+      selector:
+        text:
+    chourouq_ga:
+      name: "Adresse GA Chourouq"
+      description: "Adresse de groupe KNX pour Chourouq (ex: 1/1/2)"
+      selector:
+        text:
+    dhuhr_ga:
+      name: "Adresse GA Dhuhr"
+      description: "Adresse de groupe KNX pour Dhuhr (ex: 1/1/3)"
+      selector:
+        text:
+    asr_ga:
+      name: "Adresse GA Asr"
+      description: "Adresse de groupe KNX pour Asr (ex: 1/1/4)"
+      selector:
+        text:
+    maghrib_ga:
+      name: "Adresse GA Maghrib"
+      description: "Adresse de groupe KNX pour Maghrib (ex: 1/1/5)"
+      selector:
+        text:
+    ishae_ga:
+      name: "Adresse GA Ishae"
+      description: "Adresse de groupe KNX pour Ishae (ex: 1/1/6)"
+      selector:
+        text:
+    next_prayer_ga:
+      name: "Adresse GA Prochaine Prière"
+      description: "Adresse de groupe KNX pour la prochaine prière (ex: 1/1/7)"
+      selector:
+        text:
+    ville_id:
+      name: "ID de la ville"
+      description: "ID de la ville pour les sensors Salat Time (défaut: 7)"
+      default: 7
+      selector:
+        number:
+          min: 1
+          max: 322
+          step: 1
+
+trigger:
+  - platform: state
+    entity_id: sensor.salat_alfajr
+    id: trigger_alfajr
+  - platform: state
+    entity_id: sensor.salat_chourouq
+    id: trigger_chourouq
+  - platform: state
+    entity_id: sensor.salat_dhuhr
+    id: trigger_dhuhr
+  - platform: state
+    entity_id: sensor.salat_asr
+    id: trigger_asr
+  - platform: state
+    entity_id: sensor.salat_maghrib
+    id: trigger_maghrib
+  - platform: state
+    entity_id: sensor.salat_ishae
+    id: trigger_ishae
+  - platform: state
+    entity_id: sensor.salat_next_prayer
+    id: trigger_next_prayer
+  - platform: homeassistant
+    event: start
+    id: trigger_startup
+
+condition: []
+
+action:
+  - choose:
+      # Alfajr
+      - conditions:
+          - condition: trigger
+            id: trigger_alfajr
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_alfajr') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input alfajr_ga
+              payload: >
+                {% set time_str = states('sensor.salat_alfajr') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Chourouq
+      - conditions:
+          - condition: trigger
+            id: trigger_chourouq
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_chourouq') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input chourouq_ga
+              payload: >
+                {% set time_str = states('sensor.salat_chourouq') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Dhuhr
+      - conditions:
+          - condition: trigger
+            id: trigger_dhuhr
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_dhuhr') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input dhuhr_ga
+              payload: >
+                {% set time_str = states('sensor.salat_dhuhr') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Asr
+      - conditions:
+          - condition: trigger
+            id: trigger_asr
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_asr') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input asr_ga
+              payload: >
+                {% set time_str = states('sensor.salat_asr') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Maghrib
+      - conditions:
+          - condition: trigger
+            id: trigger_maghrib
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_maghrib') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input maghrib_ga
+              payload: >
+                {% set time_str = states('sensor.salat_maghrib') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Ishae
+      - conditions:
+          - condition: trigger
+            id: trigger_ishae
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_ishae') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input ishae_ga
+              payload: >
+                {% set time_str = states('sensor.salat_ishae') %}
+                {% set parts = time_str.split(':') %}
+                {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+              type: "DPTValue1Ucount"
+      
+      # Next Prayer
+      - conditions:
+          - condition: trigger
+            id: trigger_next_prayer
+        sequence:
+          - condition: template
+            value_template: "{{ states('sensor.salat_next_prayer') not in ['unknown', 'unavailable', ''] }}"
+          - service: knx.send
+            data:
+              address: !input next_prayer_ga
+              payload: >
+                {% set prayer = states('sensor.salat_next_prayer') | lower %}
+                {% if prayer == 'alfajr' %}1
+                {% elif prayer == 'chourouq' %}2
+                {% elif prayer == 'dhuhr' %}3
+                {% elif prayer == 'asr' %}4
+                {% elif prayer == 'maghrib' %}5
+                {% elif prayer == 'ishae' %}6
+                {% else %}0{% endif %}
+              type: "DPTValue1Ucount"
+      
+      # Startup - Envoyer toutes les valeurs
+      - conditions:
+          - condition: trigger
+            id: trigger_startup
+        sequence:
+          - delay: "00:00:10"
+          - condition: template
+            value_template: "{{ states('sensor.salat_alfajr') not in ['unknown', 'unavailable', ''] }}"
+          - parallel:
+              - service: knx.send
+                data:
+                  address: !input alfajr_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_alfajr') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input chourouq_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_chourouq') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input dhuhr_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_dhuhr') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input asr_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_asr') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input maghrib_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_maghrib') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input ishae_ga
+                  payload: >
+                    {% set time_str = states('sensor.salat_ishae') %}
+                    {% set parts = time_str.split(':') %}
+                    {{ (parts[0] | int(0)) * 60 + (parts[1] | int(0)) }}
+                  type: "DPTValue1Ucount"
+              - service: knx.send
+                data:
+                  address: !input next_prayer_ga
+                  payload: >
+                    {% set prayer = states('sensor.salat_next_prayer') | lower %}
+                    {% if prayer == 'alfajr' %}1
+                    {% elif prayer == 'chourouq' %}2
+                    {% elif prayer == 'dhuhr' %}3
+                    {% elif prayer == 'asr' %}4
+                    {% elif prayer == 'maghrib' %}5
+                    {% elif prayer == 'ishae' %}6
+                    {% else %}0{% endif %}
+                  type: "DPTValue1Ucount"
+
+mode: single
+

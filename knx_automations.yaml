@@ -1,0 +1,154 @@
+# Automations pour envoyer les horaires de prière sur le bus KNX
+# 
+# Configuration requise :
+# 1. Installer l'intégration KNX dans Home Assistant
+# 2. Configurer vos adresses GA (Group Address) dans knx.yaml ou via l'interface
+# 3. Adapter les adresses GA ci-dessous selon votre configuration
+#
+# Format des valeurs :
+# - Les heures sont envoyées en minutes depuis minuit (0-1439)
+# - Exemple: 06:54 = 6*60 + 54 = 414 minutes
+
+automation:
+  # Envoi de l'heure d'Alfajr
+  - alias: "KNX - Envoyer heure Alfajr"
+    id: knx_send_alfajr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_alfajr
+        # Se déclenche quand le sensor change (mise à jour quotidienne)
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_alfajr') != 'unknown' and states('sensor.salat_alfajr') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/1"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_alfajr') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_alfajr') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"  # 16-bit unsigned (0-65535)
+
+  # Envoi de l'heure de Chourouq
+  - alias: "KNX - Envoyer heure Chourouq"
+    id: knx_send_chourouq
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_chourouq
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_chourouq') != 'unknown' and states('sensor.salat_chourouq') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/2"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_chourouq') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_chourouq') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure de Dhuhr
+  - alias: "KNX - Envoyer heure Dhuhr"
+    id: knx_send_dhuhr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_dhuhr
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_dhuhr') != 'unknown' and states('sensor.salat_dhuhr') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/3"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_dhuhr') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_dhuhr') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure d'Asr
+  - alias: "KNX - Envoyer heure Asr"
+    id: knx_send_asr
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_asr
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_asr') != 'unknown' and states('sensor.salat_asr') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/4"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_asr') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_asr') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure de Maghrib
+  - alias: "KNX - Envoyer heure Maghrib"
+    id: knx_send_maghrib
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_maghrib
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_maghrib') != 'unknown' and states('sensor.salat_maghrib') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/5"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_maghrib') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_maghrib') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"
+
+  # Envoi de l'heure d'Ishae
+  - alias: "KNX - Envoyer heure Ishae"
+    id: knx_send_ishae
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_ishae
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_ishae') != 'unknown' and states('sensor.salat_ishae') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/6"  # Adresse GA à adapter
+          payload: "{{ (states('sensor.salat_ishae') | regex_replace(':', '') | int(0) // 100 * 60) + (states('sensor.salat_ishae') | regex_replace(':', '') | int(0) % 100) }}"
+          type: "DPTValue1Ucount"
+
+  # Envoi de la prochaine prière (code numérique)
+  - alias: "KNX - Envoyer prochaine prière"
+    id: knx_send_next_prayer
+    trigger:
+      - platform: state
+        entity_id: sensor.salat_next_prayer
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_next_prayer') != 'unknown' and states('sensor.salat_next_prayer') != 'unavailable' }}"
+    action:
+      - service: knx.send
+        data:
+          address: "1/1/7"  # Adresse GA à adapter
+          payload: >
+            {% set prayer = states('sensor.salat_next_prayer') | lower %}
+            {% if prayer == 'alfajr' %}1
+            {% elif prayer == 'chourouq' %}2
+            {% elif prayer == 'dhuhr' %}3
+            {% elif prayer == 'asr' %}4
+            {% elif prayer == 'maghrib' %}5
+            {% elif prayer == 'ishae' %}6
+            {% else %}0{% endif %}
+          type: "DPTValue1Ucount"
+
+  # Envoi initial au démarrage de Home Assistant
+  - alias: "KNX - Envoyer toutes les heures au démarrage"
+    id: knx_send_all_on_startup
+    trigger:
+      - platform: homeassistant
+        event: start
+    condition:
+      - condition: template
+        value_template: "{{ states('sensor.salat_alfajr') != 'unknown' }}"
+    action:
+      - service: automation.trigger
+        data:
+          entity_id:
+            - automation.knx_send_alfajr
+            - automation.knx_send_chourouq
+            - automation.knx_send_dhuhr
+            - automation.knx_send_asr
+            - automation.knx_send_maghrib
+            - automation.knx_send_ishae
+            - automation.knx_send_next_prayer
+
