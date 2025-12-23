@@ -13,7 +13,10 @@ salate-time/
 │       ├── const.py              # Constantes
 │       ├── sensor.py             # Sensor principal
 │       └── README.md             # Documentation du composant
-├── salat.py                      # Script standalone (pour tests)
+├── .github/
+│   └── workflows/
+│       └── validate.yml          # Validation HACS
+├── hacs.json                     # Configuration HACS
 ├── requirements.txt              # Dépendances Python
 ├── configuration.yaml.example    # Exemple de configuration
 └── README.md                     # Ce fichier
@@ -21,7 +24,39 @@ salate-time/
 
 ## Installation dans Home Assistant
 
-### Étape 1 : Copier les fichiers
+### Méthode 1 : Installation via HACS (Recommandé)
+
+1. **Installer HACS** si ce n'est pas déjà fait : [Documentation HACS](https://hacs.xyz/docs/setup/download)
+
+2. **Ajouter ce dépôt à HACS** :
+   - Allez dans **HACS** → **Integrations**
+   - Cliquez sur les **3 points** (⋮) en haut à droite
+   - Sélectionnez **Custom repositories**
+   - Ajoutez le dépôt :
+     - **Repository**: `https://github.com/medbenk1/hass-habous`
+     - **Category**: `Integration`
+   - Cliquez sur **Add**
+
+3. **Installer le composant** :
+   - Recherchez "Salat Time (Morocco)" dans HACS
+   - Cliquez sur **Download**
+   - Redémarrez Home Assistant
+
+4. **Configuration** :
+   Ajoutez la configuration dans votre `configuration.yaml` :
+
+```yaml
+sensor:
+  - platform: salat_time
+    ville: 7  # ID de la ville (voir liste ci-dessous)
+    scan_interval: 3600  # Optionnel, défaut: 3600 secondes
+```
+
+5. **Redémarrer** Home Assistant
+
+### Méthode 2 : Installation manuelle
+
+#### Étape 1 : Copier les fichiers
 
 Copiez le dossier `custom_components/salat_time` dans votre installation Home Assistant :
 
@@ -33,7 +68,17 @@ cp -r custom_components/salat_time /config/custom_components/
 cp -r custom_components/salat_time /path/to/homeassistant/config/custom_components/
 ```
 
-### Étape 2 : Configuration
+#### Étape 2 : Installation depuis GitHub
+
+```bash
+# Se connecter à Home Assistant via SSH
+cd /config
+git clone https://github.com/medbenk1/hass-habous.git temp_repo
+cp -r temp_repo/custom_components/salat_time custom_components/
+rm -rf temp_repo
+```
+
+#### Étape 3 : Configuration
 
 Ajoutez la configuration dans votre `configuration.yaml` :
 
@@ -44,7 +89,7 @@ sensor:
     scan_interval: 3600  # Optionnel, défaut: 3600 secondes
 ```
 
-### Étape 3 : Redémarrer
+#### Étape 4 : Redémarrer
 
 Redémarrez Home Assistant pour charger le composant.
 
@@ -84,17 +129,6 @@ automation:
           message: "Il est temps pour Al-Fajr"
 ```
 
-## Test du script standalone
-
-Pour tester le script Python directement :
-
-```bash
-# Activer l'environnement virtuel
-source venv/bin/activate
-
-# Exécuter le script
-python salat.py
-```
 
 ## Développement
 
