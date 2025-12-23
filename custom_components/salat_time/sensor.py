@@ -100,13 +100,18 @@ class SalatTimeCoordinator(DataUpdateCoordinator):
         # Extract times (they are in order: Alfajr, Chourouq, Dhuhr, Asr, Maghrib, Ishae)
         times = [cell.get_text().strip() for cell in time_cells]
 
-        current_date = datetime.now().date()
+        # Get current date in local timezone
+        now = dt_util.now()
+        current_date = now.date()
 
-        # Parse times and create datetime objects
+        # Parse times and create timezone-aware datetime objects
         data = {}
         for i, prayer_name in enumerate(["Alfajr", "Chourouq", "Dhuhr", "Asr", "Maghrib", "Ishae"]):
             time_str = times[i]
-            dt = datetime.strptime(f"{current_date} {time_str}", "%Y-%m-%d %H:%M")
+            # Create naive datetime first
+            dt_naive = datetime.strptime(f"{current_date} {time_str}", "%Y-%m-%d %H:%M")
+            # Convert to timezone-aware using local timezone
+            dt = dt_util.as_local(dt_naive)
             data[prayer_name.lower()] = dt
 
         return data
