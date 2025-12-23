@@ -8,7 +8,6 @@ import urllib3
 import requests
 from bs4 import BeautifulSoup
 from homeassistant.components.sensor import SensorEntity, SensorStateClass
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -29,13 +28,27 @@ async def async_setup_platform(
     discovery_info: dict | None = None,
 ) -> None:
     """Set up the Salat Time sensor platform."""
+    _LOGGER.debug("Setting up Salat Time platform with config: %s", config)
+    
     ville = config.get("ville", DEFAULT_VILLE)
     scan_interval = config.get("scan_interval", DEFAULT_SCAN_INTERVAL)
+    
+    _LOGGER.info("Initializing Salat Time sensor for ville=%s, scan_interval=%s", ville, scan_interval)
 
-    coordinator = SalatTimeCoordinator(hass, ville, scan_interval)
-    await coordinator.async_config_entry_first_refresh()
-
-    async_add_entities([SalatTimeSensor(coordinator, ville)])
+    try:
+        coordinator = SalatTimeCoordinator(hass, ville, scan_interval)
+        
+        # Fetch initial data (non-blocking, will retry if it fails)
+        try:
+            await coordinator.async_refresh()
+            _LOGGER.info("Salat Time coordinator initialized successfully")
+        except Exception as refresh_err:
+            _LOGGER.warning("Initial refresh failed, will retry on next update: %s", refresh_err)
+        
+        async_add_entities([SalatTimeSensor(coordinator, ville)])
+    except Exception as err:
+        _LOGGER.error("Error setting up Salat Time platform: %s", err, exc_info=True)
+        raise
 
 
 class SalatTimeCoordinator(DataUpdateCoordinator):
