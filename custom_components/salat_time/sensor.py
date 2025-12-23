@@ -45,7 +45,18 @@ async def async_setup_platform(
         except Exception as refresh_err:
             _LOGGER.warning("Initial refresh failed, will retry on next update: %s", refresh_err)
         
-        async_add_entities([SalatTimeSensor(coordinator, ville)])
+        # Create individual sensors for each prayer
+        entities = [
+            PrayerTimeSensor(coordinator, ville, "alfajr", "Alfajr", "mdi:weather-sunset-up"),
+            PrayerTimeSensor(coordinator, ville, "chourouq", "Chourouq", "mdi:weather-sunset"),
+            PrayerTimeSensor(coordinator, ville, "dhuhr", "Dhuhr", "mdi:weather-sunny"),
+            PrayerTimeSensor(coordinator, ville, "asr", "Asr", "mdi:weather-partly-cloudy"),
+            PrayerTimeSensor(coordinator, ville, "maghrib", "Maghrib", "mdi:weather-sunset-down"),
+            PrayerTimeSensor(coordinator, ville, "ishae", "Ishae", "mdi:weather-night"),
+            NextPrayerSensor(coordinator, ville),  # Keep the next prayer sensor
+        ]
+        
+        async_add_entities(entities)
     except Exception as err:
         _LOGGER.error("Error setting up Salat Time platform: %s", err, exc_info=True)
         raise
@@ -117,10 +128,84 @@ class SalatTimeCoordinator(DataUpdateCoordinator):
         return data
 
 
-class SalatTimeSensor(SensorEntity):
-    """Representation of a Salat Time sensor."""
+class PrayerTimeSensor(SensorEntity):
+    """Representation of a single prayer time sensor."""
 
-    _attr_name = "Salat Time"
+    _attr_icon = "mdi:islam"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: SalatTimeCoordinator, ville: int, prayer_key: str, prayer_name: str, icon: str):
+        """Initialize the sensor."""
+        self.coordinator = coordinator
+        self._ville = ville
+        self._prayer_key = prayer_key
+        self._prayer_name = prayer_name
+        self._attr_name = f"Salat {prayer_name}"
+        self._attr_unique_id = f"salat_time_{ville}_{prayer_key}"
+        self._attr_icon = icon
+
+    @property
+    def state(self):
+        """Return the state of the sensor (time as HH:MM)."""
+        if not self.coordinator.data:
+            return None
+
+        prayer_time = self.coordinator.data.get(self._prayer_key)
+        if prayer_time:
+            return prayer_time.strftime("%H:%M")
+        return None
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes."""
+        if not self.coordinator.data:
+            return {}
+
+        prayer_time = self.coordinator.data.get(self._prayer_key)
+        if not prayer_time:
+            return {}
+
+        attrs = {
+            "datetime": prayer_time.isoformat(),
+            "timestamp": prayer_time.timestamp(),
+        }
+
+        # Add time until this prayer
+        now = dt_util.now()
+        if prayer_time > now:
+            time_until = prayer_time - now
+            attrs["time_until"] = str(time_until).split(".")[0]  # Remove microseconds
+            attrs["is_passed"] = False
+        else:
+            attrs["is_passed"] = True
+
+        return attrs
+
+    @property
+    def should_poll(self):
+        """No need to poll, coordinator handles it."""
+        return False
+
+    @property
+    def available(self):
+        """Return if entity is available."""
+        return self.coordinator.last_update_success
+
+    async def async_added_to_hass(self):
+        """When entity is added to hass."""
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self.async_write_ha_state)
+        )
+
+    async def async_update(self):
+        """Update the entity."""
+        await self.coordinator.async_request_refresh()
+
+
+class NextPrayerSensor(SensorEntity):
+    """Representation of the next prayer sensor."""
+
+    _attr_name = "Salat Next Prayer"
     _attr_icon = "mdi:islam"
     _attr_state_class = SensorStateClass.MEASUREMENT
 
@@ -128,7 +213,7 @@ class SalatTimeSensor(SensorEntity):
         """Initialize the sensor."""
         self.coordinator = coordinator
         self._ville = ville
-        self._attr_unique_id = f"salat_time_{ville}"
+        self._attr_unique_id = f"salat_time_{ville}_next"
 
     @property
     def state(self):
@@ -136,7 +221,7 @@ class SalatTimeSensor(SensorEntity):
         if not self.coordinator.data:
             return None
 
-        # Return the next prayer time
+        # Return the next prayer name
         now = dt_util.now()
         prayers = [
             ("alfajr", self.coordinator.data.get("alfajr")),
@@ -161,13 +246,6 @@ class SalatTimeSensor(SensorEntity):
         if not self.coordinator.data:
             return {}
 
-        attrs = {}
-        for prayer_name, prayer_time in self.coordinator.data.items():
-            if prayer_time:
-                attrs[prayer_name] = prayer_time.isoformat()
-                attrs[f"{prayer_name}_time"] = prayer_time.strftime("%H:%M")
-
-        # Add next prayer info
         now = dt_util.now()
         prayers = [
             ("alfajr", self.coordinator.data.get("alfajr")),
@@ -186,11 +264,13 @@ class SalatTimeSensor(SensorEntity):
                 next_prayer_time = prayer_time
                 break
 
-        if next_prayer:
+        attrs = {}
+        if next_prayer and next_prayer_time:
             attrs["next_prayer"] = next_prayer.title()
-            attrs["next_prayer_time"] = next_prayer_time.isoformat()
+            attrs["next_prayer_time"] = next_prayer_time.strftime("%H:%M")
+            attrs["next_prayer_datetime"] = next_prayer_time.isoformat()
             time_until = next_prayer_time - now
-            attrs["time_until_next"] = str(time_until).split(".")[0]  # Remove microseconds
+            attrs["time_until"] = str(time_until).split(".")[0]  # Remove microseconds
 
         return attrs
 
