@@ -1,0 +1,12 @@
+{
+  "domain": "salat_time",
+  "name": "Salat Time (Morocco)",
+  "version": "1.0.0",
+  "documentation": "https://github.com/yourusername/salate-time",
+  "issue_tracker": "https://github.com/yourusername/salate-time/issues",
+  "codeowners": ["@yourusername"],
+  "requirements": ["beautifulsoup4>=4.14.0", "requests>=2.32.0"],
+  "iot_class": "cloud_polling",
+  "config_flow": false
+}
+

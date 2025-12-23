@@ -1,0 +1,12 @@
+# Exemple de configuration pour Salat Time
+sensor:
+  - platform: salat_time
+    ville: 7  # القنيطرة (Kenitra)
+    scan_interval: 3600  # Mise à jour toutes les heures (optionnel)
+
+# Exemples d'autres villes :
+# ville: 1   # الرباط (Rabat)
+# ville: 58  # الدار البيضاء (Casablanca)
+# ville: 81  # فاس (Fes)
+# ville: 104 # مراكش (Marrakech)
+
