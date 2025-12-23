@@ -24,25 +24,25 @@ salate-time/
 
 ## Installation dans Home Assistant
 
-### Méthode 1 : Installation via HACS (Recommandé)
+### Méthode 1 : Installation automatique via script (Recommandé)
 
-1. **Installer HACS** si ce n'est pas déjà fait : [Documentation HACS](https://hacs.xyz/docs/setup/download)
+1. **Téléchargez le script d'installation** :
+   ```bash
+   curl -O https://raw.githubusercontent.com/medbenk1/hass-habous/main/install.sh
+   chmod +x install.sh
+   ```
 
-2. **Ajouter ce dépôt à HACS** :
-   - Allez dans **HACS** → **Integrations**
-   - Cliquez sur les **3 points** (⋮) en haut à droite
-   - Sélectionnez **Custom repositories**
-   - Ajoutez le dépôt :
-     - **Repository**: `https://github.com/medbenk1/hass-habous`
-     - **Category**: `Integration`
-   - Cliquez sur **Add**
+2. **Exécutez le script** :
+   ```bash
+   # Sur Home Assistant OS/Supervised (chemin par défaut)
+   ./install.sh
+   
+   # Ou spécifiez le chemin de votre config
+   export HOME_ASSISTANT_CONFIG=/path/to/config
+   ./install.sh
+   ```
 
-3. **Installer le composant** :
-   - Recherchez "Salat Time (Morocco)" dans HACS
-   - Cliquez sur **Download**
-   - Redémarrez Home Assistant
-
-4. **Configuration** :
+3. **Configuration** :
    Ajoutez la configuration dans votre `configuration.yaml` :
 
 ```yaml
@@ -52,46 +52,43 @@ sensor:
     scan_interval: 3600  # Optionnel, défaut: 3600 secondes
 ```
 
-5. **Redémarrer** Home Assistant
+4. **Redémarrer** Home Assistant
 
-### Méthode 2 : Installation manuelle
-
-#### Étape 1 : Copier les fichiers
-
-Copiez le dossier `custom_components/salat_time` dans votre installation Home Assistant :
-
-```bash
-# Sur Home Assistant OS/Supervised
-cp -r custom_components/salat_time /config/custom_components/
-
-# Sur Home Assistant Core (Docker)
-cp -r custom_components/salat_time /path/to/homeassistant/config/custom_components/
-```
-
-#### Étape 2 : Installation depuis GitHub
+### Méthode 2 : Installation manuelle via Git
 
 ```bash
 # Se connecter à Home Assistant via SSH
 cd /config
+
+# Cloner le dépôt temporairement
 git clone https://github.com/medbenk1/hass-habous.git temp_repo
+
+# Copier le custom component
 cp -r temp_repo/custom_components/salat_time custom_components/
+
+# Nettoyer
 rm -rf temp_repo
 ```
 
-#### Étape 3 : Configuration
+Puis ajoutez la configuration dans `configuration.yaml` et redémarrez Home Assistant.
 
-Ajoutez la configuration dans votre `configuration.yaml` :
+### Méthode 3 : Installation manuelle (copie de fichiers)
 
-```yaml
-sensor:
-  - platform: salat_time
-    ville: 7  # ID de la ville (voir liste ci-dessous)
-    scan_interval: 3600  # Optionnel, défaut: 3600 secondes
-```
+1. Clonez le dépôt localement :
+   ```bash
+   git clone https://github.com/medbenk1/hass-habous.git
+   ```
 
-#### Étape 4 : Redémarrer
+2. Copiez le dossier `custom_components/salat_time` dans votre Home Assistant :
+   ```bash
+   # Sur Home Assistant OS/Supervised
+   cp -r custom_components/salat_time /config/custom_components/
+   
+   # Sur Home Assistant Core (Docker)
+   cp -r custom_components/salat_time /path/to/homeassistant/config/custom_components/
+   ```
 
-Redémarrez Home Assistant pour charger le composant.
+3. Ajoutez la configuration dans `configuration.yaml` et redémarrez.
 
 ## Liste des villes (ID)
 

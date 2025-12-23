@@ -4,42 +4,35 @@ Ce composant personnalisé pour Home Assistant récupère les horaires de prièr
 
 ## Installation
 
-### Méthode 1 : Installation via HACS (Recommandé)
+### Installation via Git (Recommandé)
 
-1. **Installer HACS** si ce n'est pas déjà fait : [Documentation HACS](https://hacs.xyz/docs/setup/download)
+```bash
+# Se connecter à Home Assistant via SSH
+cd /config
 
-2. **Ajouter ce dépôt à HACS** :
-   - Allez dans **HACS** → **Integrations**
-   - Cliquez sur les **3 points** (⋮) en haut à droite
-   - Sélectionnez **Custom repositories**
-   - Ajoutez le dépôt :
-     - **Repository**: `https://github.com/medbenk1/hass-habous`
-     - **Category**: `Integration`
-   - Cliquez sur **Add**
+# Cloner le dépôt temporairement
+git clone https://github.com/medbenk1/hass-habous.git temp_repo
 
-3. **Installer le composant** :
-   - Recherchez "Salat Time (Morocco)" dans HACS
-   - Cliquez sur **Download**
-   - Redémarrez Home Assistant
+# Copier le custom component
+cp -r temp_repo/custom_components/salat_time custom_components/
 
-4. **Configuration** :
-   Ajoutez la configuration dans votre `configuration.yaml` :
-
-```yaml
-sensor:
-  - platform: salat_time
-    ville: 7  # ID de la ville (7 = القنيطرة / Kenitra)
-    scan_interval: 3600  # Intervalle de mise à jour en secondes (optionnel, défaut: 3600)
+# Nettoyer
+rm -rf temp_repo
 ```
 
-### Méthode 2 : Installation manuelle
+### Installation manuelle
 
-1. Copiez le dossier `custom_components/salat_time` dans le répertoire `custom_components` de votre installation Home Assistant.
+1. Clonez le dépôt localement :
+   ```bash
+   git clone https://github.com/medbenk1/hass-habous.git
+   ```
+
+2. Copiez le dossier `custom_components/salat_time` dans le répertoire `custom_components` de votre installation Home Assistant.
    - Chemin typique : `/config/custom_components/salat_time`
 
-2. Redémarrez Home Assistant.
+3. Redémarrez Home Assistant.
 
-3. Ajoutez la configuration dans votre `configuration.yaml` :
+4. Ajoutez la configuration dans votre `configuration.yaml` :
 
 ```yaml
 sensor:
